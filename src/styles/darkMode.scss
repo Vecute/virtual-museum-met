@@ -17,7 +17,7 @@
   --modal-image-button-color: #333333;
   --link-color: #6495ed;
   --link-hover-color: #444444;
-  --icon-color: #eeeeee;
+  --icon-color: #ffffff;
   --icon-hover-color: #6495ed;
   --icon-accent-color: #ffc10a;
   --button-font-color: #ffffff;
@@ -119,6 +119,6 @@ body {
     }
   }
   @media only screen and (max-width: 767px) {
-margin-right: 20px;
+    margin-right: 20px;
   }
 }
