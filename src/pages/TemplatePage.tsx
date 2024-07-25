@@ -2,6 +2,7 @@ import React from "react";
 import "../styles/templatePage.scss";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ButtonScrollUp from "../components/ButtonScrollUp";
 // import useSearch from '../customHooks/useSearch';
 
 interface TemplatePageProps {
@@ -26,6 +27,7 @@ const TemplatePage = (props: TemplatePageProps) => {
             <div className="template__container">{children}</div>
           </div>
         </div>
+        <ButtonScrollUp/>
         <Footer />
       </div>
     </>
