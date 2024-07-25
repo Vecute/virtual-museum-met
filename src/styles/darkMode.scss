@@ -1,0 +1,124 @@
+:root {
+  --font-color: #444444;
+  --tab-hover-color: #6495ed;
+  --secondary-font-color: #555454;
+  --background-color: #eeeeee;
+  --background-modal-color: #00000066;
+  --modal-border-color: #000000ef;
+  --modal-image-background-color: #000000bb;
+  --account-modal-background-color: #000000bb;
+  --account-modal-icon-color: #eeeeee;
+  --account-modal-button-color: #333333;
+  --account-modal-icon-hover-color: #6495ed;
+  --account-modal-font-color: #6495ed;
+  --modal-image-border-color: #eeeeee;
+  --modal-image-icon-color: #eeeeee;
+  --modal-image-icon-hover-color: #6495ed;
+  --modal-image-button-color: #333333;
+  --link-color: #6495ed;
+  --link-hover-color: #444444;
+  --icon-color: #eeeeee;
+  --icon-hover-color: #6495ed;
+  --icon-accent-color: #ffc10a;
+  --button-font-color: #ffffff;
+  --button-background-color: #6495ed;
+  --button-border-color: #cccccc;
+  --button-font-hover-color: #444444;
+  --button-background-hover-color: #eeeeee;
+  --button-border-hover-color: #333333;
+  --header-background-color: #eeeeee;
+  --header-border-color: #eeeeee;
+  --header-font-color: #444444;
+  --header-hover-color: #6495ed;
+  --header-font-hover-color: #ffffff;
+  --border-hover-color: #333333;
+  --input-border-color: #252f3a;
+  --input-background-color: #ffffff;
+  --error-color: #ff0000;
+  --shadow-color: #00000033;
+  --border-color: #eeeeee;
+  --pagination-border-color: #cccccc;
+  --pagination-accent-color: #6495ed;
+  --spinner-circle-color: #333333;
+  --spinner-highlighter: #6495ed;
+  --add-post-input-background: #ffffff;
+  --add-post-input-font-color: #444444;
+  --add-post-input-reset-color: #ff0000;
+  --add-post-input-reset-hover-color: #444444;
+  --delete-button-color: transparent;
+  --delete-button-font-color: #f15a5a;
+  --delete-button-border-color: #f15a5a;
+  --delete-button-hover-color: #f15a5a;
+  --delete-button-font-hover-color: #eeeeee;
+  --delete-button-border-hover-color: #eeeeee;
+  --cancel-button-font-color: #6495ed;
+  --cancel-button-border-color: #6495ed;
+  --cancel-button-background-color: #eeeeee;
+  --cancel-button-hover-background-color: #eeeeee;
+  --cancel-button-hover-font-color: #333333;
+  --alert-background-error-color: #d43e3e;
+  --alert-background-success-color: #6495ed;
+  --alert-font-color: #eeeeee;
+  --alert-border-color: #333333;
+  --alert-icon-hover-color: #333333;
+  --alert-icon-color: #eeeeee;
+  --caret-color: #6495ed;
+  --focus-color: #6495ed;
+}
+
+[data-theme="dark"] {
+  --font-color: #eeeeee;
+  --secondary-font-color: #eeeeeebe;
+  --background-color: #333333;
+  --modal-border-color: #eeeeee;
+  --account-modal-font-color: #6495ed;
+  --link-color: #6495ed;
+  --link-hover-color: #eeeeee;
+  --icon-hover-color: #88afff;
+  --button-font-color: #eeeeee;
+  --button-background-color: #4a79c2;
+  --button-border-color: #cccccc;
+  --button-font-hover-color: #eeeeee;
+  --button-background-hover-color: #000000;
+  --button-border-hover-color: #6495ed;
+  --header-background-color: #000000;
+  --header-border-color: #333333;
+  --header-font-color: #eeeeee;
+  --header-hover-color: #4a79c2;
+  --header-font-hover-color: #eeeeee;
+  --border-hover-color: #6495ed;
+  --input-border-color: #eeeeee;
+  --input-background-color: #eeeeee;
+  --shadow-color: #8680804d;
+  --border-color: #333333;
+  --pagination-border-color: #cccccc;
+  --spinner-circle-color: #eeeeee;
+  --cancel-button-font-color: #eeeeee;
+  --cancel-button-border-color: #eeeeee;
+  --cancel-button-background-color: #333333;
+  --cancel-button-hover-background-color: #000000;
+  --cancel-button-hover-font-color: #eeeeee;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--font-color);
+}
+
+.theme-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.3s linear;
+  @media (hover: hover) {
+    &:hover svg {
+      fill: var(--icon-accent-color);
+    }
+  }
+  @media only screen and (max-width: 767px) {
+margin-right: 20px;
+  }
+}
