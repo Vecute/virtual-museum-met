@@ -12,7 +12,7 @@ function App() {
         <Route path="/departments" element={<DepartmentsGalleryPage />}/>
         <Route path="/about" element={<DepartmentsGalleryPage />}/>
         <Route path="/contacts" element={<DepartmentsGalleryPage />}/>
-        <Route path="/*" element={<DepartmentsGalleryPage />} />
+        <Route path="*" element={<DepartmentsGalleryPage />} />
         {/* <Route path="one" element={<PageOne />} />
         <Route path="*" element={<UnknownPage />} /> */}
       </Routes>
