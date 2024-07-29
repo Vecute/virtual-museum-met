@@ -2,10 +2,12 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import themeReducer from "./themeReducer";
 import { useDispatch } from "react-redux";
 import { thunk } from "redux-thunk";
+import departmentsReducer from "./departmentsReducer";
 
 // Создание главного редюсера путем объединения редюсеров с помощью функции combineReducers
 const combineReducer = combineReducers({
         themeReducer, // Редюсер для темы
+        departmentsReducer
     }
 )
 
