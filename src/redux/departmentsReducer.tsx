@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchDepartments } from '../thunk/fetchDepartmets'; // Импортируем thunk
+import { fetchDepartments } from '../thunk/fetchDepartments';
 
 type Department = {
   departmentId: number;

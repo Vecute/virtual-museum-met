@@ -1,34 +1,31 @@
 import { useEffect } from "react";
 import { RootState, useAppDispatch } from "../redux/store";
 import TemplatePage from "./TemplatePage";
-import { fetchDepartments } from "../thunk/fetchDepartmets";
+import { fetchDepartments } from "../thunk/fetchDepartments";
 import { useSelector } from "react-redux";
+import "../styles/departments.scss";
 
 function DepartmentsGalleryPage() {
-  const departments = useSelector((state: RootState) => state.departmentsReducer.departments);
+  const departments = useSelector(
+    (state: RootState) => state.departmentsReducer.departments
+  );
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(fetchDepartments());
   }, [dispatch]);
 
-    return (
-      <TemplatePage title="Departments Gallery">
-    <div>
-      <ul>
+  return (
+    <TemplatePage title="Departments Gallery">
+      <div className="departments__container">
         {departments.map((department) => (
-          // <li key={department.departmentId}>{department.displayName}</li>
-          <div className="department" key={department.departmentId}>
-                <div className="department__wrapper-image"><img className="department__image" src="assets/media/work1.jpg" alt=""></img></div>
-                <div className="department__info">
-                    <h2 className="department__title">{department.displayName}</h2>
-                </div>
-            </div>
+          <div className="departments__element" key={department.departmentId}>
+            <h2 className="departments__title">{department.displayName}</h2>
+          </div>
         ))}
-      </ul>
-    </div>
-      </TemplatePage>
-    );
-  }
+      </div>
+    </TemplatePage>
+  );
+}
 
-export default DepartmentsGalleryPage
+export default DepartmentsGalleryPage;
