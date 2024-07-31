@@ -38,7 +38,7 @@ const ExhibitPage = () => {
               <img className="object__image" src={object.primaryImage} alt={object.objectName} />
             </div>
           )}
-          <div className="object__about">
+          <div className={`object__about ${!object.primaryImage && 'object__alone'}`}>
             {object.accessionYear && <p className="object__text">Accession year: <span>{object.accessionYear}</span></p>}
             {object.department && <p className="object__text">Department: <span>{object.department}</span></p>}
             {object.objectName && <p className="object__text">Object name: <span>{object.objectName}</span></p>}
