@@ -57,16 +57,12 @@ const ExhibitPage = () => {
                 <a className="object__link" href={object.artistWikidata_URL}> {object.artistWikidata_URL}</a>
               </p>
             )}
-            {object.objectBeginDate && object.objectEndDate && (object.objectBeginDate !== object.objectEndDate) && (
+            {object.objectBeginDate && object.objectEndDate && (object.objectBeginDate !== object.objectEndDate) && !object.objectDate && (
               <p className="object__text">
                 Date: <span>{object.objectBeginDate} - {object.objectEndDate}</span>
               </p>
             )}
-            {object.objectBeginDate && object.objectEndDate && (object.objectBeginDate === object.objectEndDate) && (
-              <p className="object__text">
-                Date: <span>{object.objectBeginDate}</span>
-              </p>
-            )}
+            {object.objectDate && <p className="object__text">Date: <span>{object.objectDate}</span></p>}
             {object.medium && <p className="object__text">Medium: <span>{object.medium}</span></p>}
             {object.dimensions && <p className="object__text">Dimensions: <span>{object.dimensions}</span></p>}
             {object.city && <p className="object__text">City: <span>{object.city}</span></p>}

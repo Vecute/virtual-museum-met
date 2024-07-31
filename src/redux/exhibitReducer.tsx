@@ -19,6 +19,7 @@ type Exhibit = {
     artistWikidata_URL:  string,
     objectBeginDate: number,
     objectEndDate: number,
+    objectDate: string;
     medium: string,
     dimensions: string,
     creditLine: string,
