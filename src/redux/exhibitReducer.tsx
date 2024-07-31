@@ -16,8 +16,6 @@ type Exhibit = {
     artistDisplayName: string,
     artistDisplayBio: string,
     artistNationality: string,
-    artistBeginDate: string,
-    artistEndDate: string,
     artistWikidata_URL:  string,
     objectBeginDate: number,
     objectEndDate: number,

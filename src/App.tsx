@@ -3,6 +3,7 @@ import DepartmentsGalleryPage from "./pages/DepartmentsGalleryPage";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import ExhibitPage from "./pages/ObjectPage";
+import AboutPage from "./pages/AboutPage";
 
 function App() {
   return (
@@ -11,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<DepartmentsGalleryPage />}/>
         <Route path="/departments" element={<DepartmentsGalleryPage />}/>
-        <Route path="/about" element={<DepartmentsGalleryPage />}/>
+        <Route path="/about" element={<AboutPage />}/>
         <Route path="/contacts" element={<DepartmentsGalleryPage />}/>
         <Route path="*" element={<DepartmentsGalleryPage />} />
         <Route path="/exhibits/:objectId" element={<ExhibitPage />} />
