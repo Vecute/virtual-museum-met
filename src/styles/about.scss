@@ -14,10 +14,10 @@
     }
 
     &__description {
-        display: grid;
-        grid-template-rows: auto auto auto auto;
-        grid-template-columns: 1fr;
-        gap: 10px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        row-gap: 20px;
         @media only screen and (max-width: 1030px) {
             order: 2;
         }
