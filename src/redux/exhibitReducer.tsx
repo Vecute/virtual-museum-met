@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { fetchExhibitById } from '../thunk/fetchExhibitById';
 
 
-type Exhibit = {
+export type Exhibit = {
     objectID: 12,
     accessionYear: string,
     primaryImage: string,
@@ -32,32 +32,38 @@ type Exhibit = {
     subregion: string,
     objectURL: string,
     objectWikidata_URL: string,
+    additionalImages: string[]
 };
 
 type InitialStateType = {
-  object: Exhibit;
+  exhibits: { [id: number]: Exhibit };
   isLoading: boolean;
   error: string | null;
 };
 
 const initialState: InitialStateType = {
-  object: {} as Exhibit,
+  exhibits: {},
   isLoading: false,
   error: null,
 };
 
 const exhibitSlice = createSlice({
-  name: 'exhibit',
+  name: 'exhibits',
   initialState,
-  reducers: {},
+  reducers: {
+    // ... другие редьюсеры
+    clearExhibits: (state) => {
+      state.exhibits = {};
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchExhibitById.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(fetchExhibitById.fulfilled, (state, action) => {
-        state.object = action.payload;
         state.isLoading = false;
+        state.exhibits[action.payload.objectID] = action.payload; 
       })
       .addCase(fetchExhibitById.rejected, (state, action) => {
         state.isLoading = false;
@@ -66,4 +72,5 @@ const exhibitSlice = createSlice({
   },
 });
 
+export const { clearExhibits } = exhibitSlice.actions;
 export default exhibitSlice.reducer;

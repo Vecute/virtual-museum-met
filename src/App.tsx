@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import ExhibitPage from "./pages/ObjectPage";
 import AboutPage from "./pages/AboutPage";
+import SearchPage from "./pages/SearchPage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/contacts" element={<DepartmentsGalleryPage />}/>
         <Route path="*" element={<DepartmentsGalleryPage />} />
         <Route path="/exhibits/:objectId" element={<ExhibitPage />} />
+        <Route path="/search" element={<SearchPage />} />
         {/* <Route path="one" element={<PageOne />} />
         <Route path="*" element={<UnknownPage />} /> */}
       </Routes>

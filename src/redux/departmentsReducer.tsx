@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { fetchDepartments } from '../thunk/fetchDepartments';
 
-type Department = {
+export type Department = {
   departmentId: number;
   displayName: string;
 };
