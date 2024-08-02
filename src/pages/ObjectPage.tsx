@@ -88,12 +88,12 @@ const ExhibitPage = () => {
             )}
             {exhibit.publication_history && (
               <p className="object__text">
-                Publication history: <span>{exhibit.publication_history}</span>
+                Publication history: <span>{exhibit.publication_history.replace(/<[^>]+>/g, "")}</span>
               </p>
             )}
             {exhibit.provenance_text && (
               <p className="object__text">
-                Origin: <span>{exhibit.provenance_text}</span>
+                Origin: <span>{exhibit.provenance_text.replace(/<[^>]+>/g, "")}</span>
               </p>
             )}
           </div>
