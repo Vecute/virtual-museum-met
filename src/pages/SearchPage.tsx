@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import SearchPagination from "../utilities/SearchPagination";
+import TemplatePage from "./TemplatePage";
 
 const API_BASE_URL = "https://api.artic.edu/api/v1/artworks/search";
 
 interface Artwork {
-    id: string;
-    title: string;
-    image_id: string;
-    department_title: string;
-  }
+  id: string;
+  title: string;
+  image_id: string;
+  department_title: string;
+}
 
-const SearchResults = () => {
+const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(
     searchParams.get("query[term][department_id]") || ""
@@ -40,14 +41,13 @@ const SearchResults = () => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const url = new URL(API_BASE_URL)
-      url.searchParams.set('limit', '20')
-      url.searchParams.set('page', currentPage.toString())
-      url.searchParams.set('fields', 'id,title,image_id,department_title')
+      const url = new URL(API_BASE_URL);
+      url.searchParams.set("limit", "20");
+      url.searchParams.set("page", currentPage.toString());
+      url.searchParams.set("fields", "id,title,image_id,department_title");
       if (searchTerm) {
-        url.searchParams.set('query[term][department_id]', searchTerm)
+        url.searchParams.set("query[term][department_id]", searchTerm);
       }
-      
 
       try {
         const response = await fetch(url.toString());
@@ -66,35 +66,42 @@ const SearchResults = () => {
   }, [searchTerm, currentPage, searchParams]);
 
   return (
-    <div>
-      <input type="text" value={searchTerm} onChange={handleSearchChange} />
+    <TemplatePage title="Search through the collection">
+      <div>
+        <input type="text" value={searchTerm} onChange={handleSearchChange} />
 
-      {isLoading && <p>Загрузка...</p>}
+        {isLoading && <p>Загрузка...</p>}
 
-      <div className="search__results">
-        {results.map((result: Artwork) => (
-          <div key={result.id}>
-            {result.title}
-            {result.image_id && (
-              <div className="exhibit__image-wrapper">
-                <img
-                  src={`https://www.artic.edu/iiif/2/${result.image_id}/full/843,/0/default.jpg`}
-                  alt={result.title}
-                  className="exhibit__image"
-                />
+        <div className="search__results">
+          {results.map((result: Artwork) => (
+            <Link
+            key={result.id}
+              to={`/exhibits/${result.id}`}
+            >
+              <div>
+                {result.title}
+                {result.image_id && (
+                  <div className="exhibit__image-wrapper">
+                    <img
+                      src={`https://www.artic.edu/iiif/2/${result.image_id}/full/843,/0/default.jpg`}
+                      alt={result.title}
+                      className="exhibit__image"
+                    />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
 
-      <SearchPagination
-        totalPages={totalPages}
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
-      />
-    </div>
+        <SearchPagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+        />
+      </div>
+    </TemplatePage>
   );
 };
 
-export default SearchResults;
+export default SearchPage;

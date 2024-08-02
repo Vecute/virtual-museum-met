@@ -1,4 +1,4 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export interface Department {
   id: string;
@@ -18,15 +18,28 @@ interface ApiResponse {
   pagination: Pagination;
 }
 
+const departmentsCacheKey = "departmentsCache";
+
 export const fetchDepartments = createAsyncThunk(
   "departments/fetchDepartments",
   async () => {
+    const cachedData = localStorage.getItem(departmentsCacheKey);
+    if (cachedData) {
+      try {
+        const parsedData: { id: string; title: string }[] =
+          JSON.parse(cachedData);
+          return parsedData.map((item) => ({ id: item.id, title: item.title }));
+      } catch (error) {
+        console.error("Ошибка парсинга данных из localStorage:", error);
+      }
+    }
+
     let allDepartments: Department[] = [];
     let currentPage = 1;
     const limit = 100;
-    let totalPages = 1 // Добавляем переменную для хранения общего количества страниц
+    let totalPages = 1;
 
-    while (currentPage <= totalPages) { // Используем totalPages в условии цикла
+    while (currentPage <= totalPages) {
       const response = await fetch(
         `https://api.artic.edu/api/v1/category-terms/search?q=&query[term][subtype]=department&limit=${limit}&page=${currentPage}`
       );
@@ -36,9 +49,8 @@ export const fetchDepartments = createAsyncThunk(
       }
 
       const data: ApiResponse = await response.json();
-      totalPages = data.pagination.total_pages; // Обновляем totalPages
+      totalPages = data.pagination.total_pages;
 
-      // Создаем массив промисов для проверок департаментов
       const departmentPromises = data.data.map(async (department) => {
         const artworksResponse = await fetch(
           `https://api.artic.edu/api/v1/artworks/search?query[term][department_id]=${department.id}`
@@ -48,10 +60,8 @@ export const fetchDepartments = createAsyncThunk(
         return artworksData.pagination.total !== 0 ? department : null;
       });
 
-      // Дожидаемся выполнения всех проверок
       const departmentResults = await Promise.all(departmentPromises);
 
-      // Добавляем непустые департаменты в результирующий массив
       allDepartments = allDepartments.concat(
         departmentResults.filter((department) => department !== null)
       );
@@ -59,6 +69,15 @@ export const fetchDepartments = createAsyncThunk(
       currentPage++;
     }
 
+    try {
+      localStorage.setItem(
+        departmentsCacheKey,
+        JSON.stringify(allDepartments.map((d) => ({ id: d.id, title: d.title })))
+      );
+    } catch (error) {
+      console.error("Ошибка сохранения данных в localStorage:", error);
+    }
+    
     return allDepartments;
   }
 );

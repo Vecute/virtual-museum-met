@@ -3,67 +3,50 @@ import { fetchExhibitById } from '../thunk/fetchExhibitById';
 
 
 export type Exhibit = {
-    objectID: 12,
-    accessionYear: string,
-    primaryImage: string,
-    department: string,
-    objectName: string,
+    id: number,
     title: string,
-    culture: string,
-    period: string,
-    dynasty: string,
-    reign: string,
-    artistDisplayName: string,
-    artistDisplayBio: string,
-    artistNationality: string,
-    artistWikidata_URL:  string,
-    objectBeginDate: number,
-    objectEndDate: number,
-    objectDate: string;
-    medium: string,
+    date_start: number,
+    date_end: number,
+    date_display: string,
+    artist_display: string,
+    place_of_origin: string,
+    description: string,
     dimensions: string,
-    creditLine: string,
-    geographyType: string,
-    city: string,
-    state: string,
-    county: string,
-    country: string,
-    region: string,
-    subregion: string,
-    objectURL: string,
-    objectWikidata_URL: string,
-    additionalImages: string[]
+    medium_display: string,
+    credit_line: string,
+    publication_history: string,
+    provenance_text: string,
+    artwork_type_title: string,
+    department_title: string,
+    department_id: string,
+    image_id: string,
 };
 
 type InitialStateType = {
-  exhibits: { [id: number]: Exhibit };
+  exhibit: Exhibit | null;
   isLoading: boolean;
   error: string | null;
 };
 
 const initialState: InitialStateType = {
-  exhibits: {},
+  exhibit: null,
   isLoading: false,
   error: null,
 };
 
 const exhibitSlice = createSlice({
-  name: 'exhibits',
+  name: 'exhibit',
   initialState,
-  reducers: {
-    // ... другие редьюсеры
-    clearExhibits: (state) => {
-      state.exhibits = {};
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchExhibitById.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
       .addCase(fetchExhibitById.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.exhibits[action.payload.objectID] = action.payload; 
+        state.exhibit = action.payload;
       })
       .addCase(fetchExhibitById.rejected, (state, action) => {
         state.isLoading = false;
@@ -72,5 +55,4 @@ const exhibitSlice = createSlice({
   },
 });
 
-export const { clearExhibits } = exhibitSlice.actions;
 export default exhibitSlice.reducer;
