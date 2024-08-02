@@ -1,10 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchDepartments } from '../thunk/fetchDepartments';
+import { Department, fetchDepartments } from '../thunk/fetchDepartments';
 
-export type Department = {
-  departmentId: number;
-  displayName: string;
-};
 
 type InitialStateType = {
   departments: Department[];

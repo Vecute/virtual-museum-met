@@ -1,221 +1,85 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useSearchParams, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
-import TemplatePage from "./TemplatePage";
-import { fetchExhibitById } from "../thunk/fetchExhibitById";
-import { RootState, useAppDispatch } from "../redux/store";
-import { clearExhibits } from "../redux/exhibitReducer";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import SearchPagination from "../utilities/SearchPagination";
-import { fetchDepartments } from "../thunk/fetchDepartments";
-import { Department } from "../redux/departmentsReducer";
 
-const SearchPage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams({ q: "*" });
-  const dispatch = useAppDispatch();
-  const exhibits = useSelector(
-    (state: RootState) => state.exhibitReducer.exhibits
+const API_BASE_URL = "https://api.artic.edu/api/v1/artworks/search";
+
+const SearchResults = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("query[term][department_id]") || "" // Извлекаем из URL или ставим дефолтное значение
   );
-  const isLoading = useSelector(
-    (state: RootState) => state.exhibitReducer.isLoading
-  );
-  const [filters, setFilters] = useState({
-    departmentId: "",
-    geoLocation: "",
-    dateBegin: "",
-    dateEnd: "",
-  });
-  const [currentPage, setCurrentPage] = useState(1);
-  const exhibitsPerPage = 10;
+  const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(
+    parseInt(searchParams.get("page")) || 1
+  ); // Читаем страницу из URL
   const [totalPages, setTotalPages] = useState(1);
-  const [exhibitIdsToDisplay, setExhibitIdsToDisplay] = useState<number[]>([]);
 
-  const departments = useSelector(
-    (state: RootState) => state.departmentsReducer.departments
-  );
-
-  useEffect(() => {
-    dispatch(fetchDepartments());
-  }, [dispatch]);
-
-  const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setFilters({
-      ...filters,
-      [event.target.name]: event.target.value,
-    });
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1); // Сбрасываем страницу на 1 при новом поиске
+    setSearchParams({ search: event.target.value, page: 1 }); // Обновляем URL
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    setCurrentPage(1);
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    setSearchParams({ ...searchParams, page }); // Обновляем URL
+  };
 
-    const params: { [key: string]: string } = {
-      q: searchParams.get("q") || "*",
-      hasImages: "true",
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}?query[term][department_id]=${searchTerm}&limit=20&page=${currentPage}&fields=id,title,image_id,department_title`
+        );
+        const data = await response.json();
+
+        setResults(data.data);
+        setTotalPages(data.pagination.total_pages);
+      } catch (error) {
+        console.error("Ошибка при получении данных:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    if (filters.departmentId) {
-      params.departmentId = filters.departmentId;
-    }
-    if (filters.geoLocation) {
-      params.geoLocation = filters.geoLocation;
-    }
-    if (filters.dateBegin) {
-      params.dateBegin = filters.dateBegin;
-    }
-    if (filters.dateEnd) {
-      params.dateEnd = filters.dateEnd;
-    }
-
-    setSearchParams(params);
-  };
-
-  const fetchData = useCallback(async () => {
-    try {
-      const response = await fetch(
-        `https://collectionapi.metmuseum.org/public/collection/v1/search?${searchParams.toString()}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.total) {
-        setTotalPages(Math.ceil(data.total / exhibitsPerPage));
-      }
-
-      if (data.objectIDs && data.objectIDs.length > 0) {
-        const startIndex = (currentPage - 1) * exhibitsPerPage;
-        const endIndex = Math.min(
-          startIndex + exhibitsPerPage,
-          data.objectIDs.length
-        );
-        const exhibitIdsToLoad = data.objectIDs.slice(startIndex, endIndex);
-
-        setExhibitIdsToDisplay(exhibitIdsToLoad);
-
-        await Promise.all(
-          exhibitIdsToLoad.map((id: number) => dispatch(fetchExhibitById(id)))
-        );
-      }
-    } catch (error) {
-      console.error("Ошибка при загрузке данных:", error);
-    }
-  }, [searchParams, currentPage, dispatch]);
-
-  useEffect(() => {
-    dispatch(clearExhibits());
     fetchData();
-  }, [fetchData, dispatch]);
-
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
+  }, [searchTerm, currentPage, searchParams]); // Добавляем searchParams в зависимости
 
   return (
-    <TemplatePage title="Search">
-      <div>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="q"
-            placeholder="Поиск..."
-            value={searchParams.get("q") || ""}
-            onChange={(e) => setSearchParams({ q: e.target.value })}
-          />
-          <button type="submit">Искать</button>
+    <div>
+      <input type="text" value={searchTerm} onChange={handleSearchChange} />
 
-          <div>
-            <label htmlFor="departmentId">Департамент:</label>
-            <select
-              name="departmentId"
-              id="departmentId"
-              value={filters.departmentId}
-              onChange={handleInputChange}
-            >
-              <option value="">Все</option>
-              {/* Отображаем опции департаментов */}
-              {departments.map(
-                (
-                  department: Department // Уточните тип department, если знаете
-                ) => (
-                  <option
-                    key={department.departmentId}
-                    value={department.departmentId}
-                  >
-                    {department.displayName}
-                  </option>
-                )
-              )}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="geoLocation">Локация:</label>
-            <input
-              type="text"
-              name="geoLocation"
-              id="geoLocation"
-              value={filters.geoLocation}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="dateBegin">Дата начала:</label>
-            <input
-              type="number"
-              name="dateBegin"
-              id="dateBegin"
-              value={filters.dateBegin}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="dateEnd">Дата окончания:</label>
-            <input
-              type="number"
-              name="dateEnd"
-              id="dateEnd"
-              value={filters.dateEnd}
-              onChange={handleInputChange}
-            />
-          </div>
-        </form>
+      {isLoading && <p>Загрузка...</p>}
 
-        {isLoading && <div>Загрузка...</div>}
-
-        <div className="search__results">
-          {exhibitIdsToDisplay.map((exhibitId) => {
-            const exhibit = exhibits[exhibitId];
-
-            // Рендерим компонент только если есть изображение
-            return exhibit?.primaryImage ? (
-              <div key={exhibitId}>
-                <Link to={`/exhibits/${exhibitId}`}>
-                  <div className="exhibit__image-wrapper">
-                    <img
-                      className="exhibit__image"
-                      src={exhibit.primaryImage}
-                      alt={exhibit.objectName}
-                    />
-                  </div>
-                  {/* ... (код отображения информации об экспонате) */}
-                </Link>
+      <div className="search__results">
+        {results.map((result) => (
+          <div key={result.id}>
+            {/* Отображение результатов поиска */}
+            {result.title}
+            {result.image_id && ( // Проверяем, есть ли image_id
+              <div className="exhibit__image-wrapper">
+                <img
+                  src={`https://www.artic.edu/iiif/2/${result.image_id}/full/843,/0/default.jpg`}
+                  alt={result.title} // Добавляем alt для изображения
+                  className="exhibit__image"
+                />
               </div>
-            ) : null; // Возвращаем null, если изображения нет
-          })}
-        </div>
-
-        <SearchPagination
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-        />
+            )}
+          </div>
+        ))}
       </div>
-    </TemplatePage>
+
+      <SearchPagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+      />
+    </div>
   );
 };
 
-export default SearchPage;
+export default SearchResults;

@@ -3,7 +3,6 @@ import "../styles/about.scss";
 
 function AboutPage() {
 
-
   return (
     <TemplatePage title="About">
       <div className="about__container">

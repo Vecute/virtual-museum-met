@@ -8,10 +8,12 @@ interface PaginationProps {
 }
 
 const SearchPagination: React.FC<PaginationProps> = ({
-  totalPages,
+  totalPages: initialTotalPages,
   currentPage,
   onPageChange,
 }) => {
+
+  const totalPages = Math.min(initialTotalPages, 50); // Ограничиваем количество страниц до 50
   
   const renderPageNumbers = () => {
     const pageNumbers = [];
