@@ -70,12 +70,14 @@ const SearchPage = () => {
       <div>
         <input type="text" value={searchTerm} onChange={handleSearchChange} />
 
-        {isLoading && <p>Загрузка...</p>}
+        {isLoading && <div className="loading">
+          <div className="spinner"></div>
+        </div>}
 
         <div className="search__results">
           {results.map((result: Artwork) => (
             <Link
-            key={result.id}
+              key={result.id}
               to={`/exhibits/${result.id}`}
             >
               <div>

@@ -21,7 +21,13 @@ const ExhibitPage = () => {
   }, [objectIdNumber, dispatch]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <TemplatePage title="Exhibit is loading">
+        <div className="loading">
+          <div className="spinner"></div>
+        </div>
+      </TemplatePage>
+    )
   }
 
   if (error) {
