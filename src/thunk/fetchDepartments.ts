@@ -23,15 +23,16 @@ const departmentsCacheKey = "departmentsCache";
 export const fetchDepartments = createAsyncThunk(
   "departments/fetchDepartments",
   async () => {
-    const cachedData = localStorage.getItem(departmentsCacheKey);
-    if (cachedData) {
-      try {
-        const parsedData: { id: string; title: string }[] =
-          JSON.parse(cachedData);
-          return parsedData.map((item) => ({ id: item.id, title: item.title }));
-      } catch (error) {
-        console.error("Ошибка парсинга данных из localStorage:", error);
+    try {
+      const cachedData = await localStorage.getItem(departmentsCacheKey);
+      if (cachedData) {
+        const parsedData: { id: string; title: string }[] = JSON.parse(
+          cachedData
+        );
+        return parsedData;
       }
+    } catch (error) {
+      console.error("Ошибка парсинга данных из localStorage:", error);
     }
 
     let allDepartments: Department[] = [];
@@ -57,27 +58,32 @@ export const fetchDepartments = createAsyncThunk(
         );
         const artworksData = await artworksResponse.json();
 
-        return artworksData.pagination.total !== 0 ? department : null;
+        return artworksData.pagination.total !== 0
+          ? { id: department.id, title: department.title }
+          : null;
       });
 
       const departmentResults = await Promise.all(departmentPromises);
 
       allDepartments = allDepartments.concat(
-        departmentResults.filter((department) => department !== null)
+        departmentResults.filter(
+          (department): department is Department => department !== null
+        )
       );
 
       currentPage++;
     }
 
+
     try {
       localStorage.setItem(
         departmentsCacheKey,
-        JSON.stringify(allDepartments.map((d) => ({ id: d.id, title: d.title })))
+        JSON.stringify(allDepartments)
       );
     } catch (error) {
       console.error("Ошибка сохранения данных в localStorage:", error);
     }
-    
+
     return allDepartments;
   }
 );
