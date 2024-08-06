@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import SearchPagination from "../utilities/SearchPagination";
 import TemplatePage from "./TemplatePage";
 
@@ -14,28 +14,37 @@ interface Artwork {
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState(
     searchParams.get("query[term][department_id]") || ""
   );
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get("page") || "1", 10) || 1
   );
   const [totalPages, setTotalPages] = useState(1);
 
+  // Функция для обновления параметров поиска
+  const updateSearchParams = (newParams: { [key: string]: string }) => {
+    setSearchParams((prevParams) => { // Используем setSearchParams с колбэком
+      navigate(`?${new URLSearchParams({...prevParams, ...newParams }).toString()}`);
+      return { ...prevParams, ...newParams }; 
+    });
+  };
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
     setCurrentPage(1);
-    setSearchParams({
+    updateSearchParams({
       "query[term][department_id]": event.target.value,
-      page: "1", // Передаем страницу как строку
+      page: "1",
     });
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    setSearchParams({ ...searchParams, page: page.toString() }); // Преобразуем страницу в строку
+    updateSearchParams({ page: page.toString() });
   };
 
   useEffect(() => {
@@ -52,7 +61,6 @@ const SearchPage = () => {
       try {
         const response = await fetch(url.toString());
         const data = await response.json();
-
         setResults(data.data);
         setTotalPages(data.pagination.total_pages);
       } catch (error) {
@@ -63,25 +71,29 @@ const SearchPage = () => {
     };
 
     fetchData();
-  }, [searchTerm, currentPage, searchParams]);
+  }, [searchTerm, currentPage]); 
 
   return (
     <TemplatePage title="Search through the collection">
       <div>
-        <input type="text" value={searchTerm} onChange={handleSearchChange} />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder="Search by department..."
+        />
 
-        {isLoading && <div className="loading">
-          <div className="spinner"></div>
-        </div>}
+        {isLoading && (
+          <div className="loading">
+            <div className="spinner"></div>
+          </div>
+        )}
 
         <div className="search__results">
-          {results.map((result: Artwork) => (
-            <Link
-              key={result.id}
-              to={`/exhibits/${result.id}`}
-            >
+          {results.map((result) => (
+            <Link key={result.id} to={`/exhibits/${result.id}`}>
               <div>
-                {result.title}
+                <h3>{result.title}</h3>
                 {result.image_id && (
                   <div className="exhibit__image-wrapper">
                     <img
@@ -95,12 +107,13 @@ const SearchPage = () => {
             </Link>
           ))}
         </div>
-
-        <SearchPagination
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-        />
+        {!isLoading && (
+          <SearchPagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
     </TemplatePage>
   );

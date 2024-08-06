@@ -5,19 +5,6 @@ export interface Department {
   title: string;
 }
 
-interface Pagination {
-  total: number;
-  limit: number;
-  offset: number;
-  total_pages: number;
-  current_page: number;
-}
-
-interface ApiResponse {
-  data: Department[];
-  pagination: Pagination;
-}
-
 const departmentsCacheKey = "departmentsCache";
 
 export const fetchDepartments = createAsyncThunk(
@@ -26,64 +13,67 @@ export const fetchDepartments = createAsyncThunk(
     try {
       const cachedData = await localStorage.getItem(departmentsCacheKey);
       if (cachedData) {
-        const parsedData: { id: string; title: string }[] = JSON.parse(
-          cachedData
-        );
+        const parsedData: Department[] = JSON.parse(cachedData);
         return parsedData;
       }
     } catch (error) {
       console.error("Ошибка парсинга данных из localStorage:", error);
     }
 
-    let allDepartments: Department[] = [];
-    let currentPage = 1;
-    const limit = 100;
-    let totalPages = 1;
-
-    while (currentPage <= totalPages) {
+    try {
       const response = await fetch(
-        `https://api.artic.edu/api/v1/category-terms/search?q=&query[term][subtype]=department&limit=${limit}&page=${currentPage}`
+        "https://api.artic.edu/api/v1/artworks/search",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            "aggs": {
+              "departments": {
+                "terms": {
+                  "field": "department_id",
+                  "size": 10000,
+                },
+                "aggs": { // Добавляем вложенный агрегатор top_hits
+                  "top_hit": {
+                    "top_hits": {
+                      "size": 1,
+                      "_source": ["department_title"],
+                    },
+                  },
+                },
+              },
+            },
+            "_source": [], // Не нужно запрашивать _source для всего документа
+          }),
+        }
       );
 
       if (!response.ok) {
         throw new Error("Ошибка загрузки данных");
       }
 
-      const data: ApiResponse = await response.json();
-      totalPages = data.pagination.total_pages;
+      const data = await response.json();
 
-      const departmentPromises = data.data.map(async (department) => {
-        const artworksResponse = await fetch(
-          `https://api.artic.edu/api/v1/artworks/search?query[term][department_id]=${department.id}`
-        );
-        const artworksData = await artworksResponse.json();
-
-        return artworksData.pagination.total !== 0
-          ? { id: department.id, title: department.title }
-          : null;
-      });
-
-      const departmentResults = await Promise.all(departmentPromises);
-
-      allDepartments = allDepartments.concat(
-        departmentResults.filter(
-          (department): department is Department => department !== null
-        )
+      // Извлекаем данные о departments, используя top_hits для получения department_title
+      const departments: Department[] = data.aggregations.departments.buckets.map(
+        (bucket: any) => ({
+          id: bucket.key,
+          title: bucket.top_hit.hits.hits[0]._source.department_title,
+        })
       );
 
-      currentPage++;
-    }
+      try {
+        localStorage.setItem(departmentsCacheKey, JSON.stringify(departments));
+      } catch (error) {
+        console.error("Ошибка сохранения данных в localStorage:", error);
+      }
 
-
-    try {
-      localStorage.setItem(
-        departmentsCacheKey,
-        JSON.stringify(allDepartments)
-      );
+      return departments;
     } catch (error) {
-      console.error("Ошибка сохранения данных в localStorage:", error);
+      console.error("Ошибка при получении данных:", error);
+      throw error;
     }
-
-    return allDepartments;
   }
 );

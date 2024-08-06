@@ -27,7 +27,7 @@ const ExhibitPage = () => {
           <div className="spinner"></div>
         </div>
       </TemplatePage>
-    )
+    );
   }
 
   if (error) {
@@ -65,6 +65,11 @@ const ExhibitPage = () => {
                 Maker: <span>{exhibit.artist_display} </span>
               </p>
             )}
+            {exhibit.place_of_origin && (
+              <p className="object__text">
+                Place of origin: <span>{exhibit.place_of_origin} </span>
+              </p>
+            )}
             {exhibit.date_display && (
               <p className="object__text">
                 Date: <span>{exhibit.date_display}</span>
@@ -94,12 +99,16 @@ const ExhibitPage = () => {
             )}
             {exhibit.publication_history && (
               <p className="object__text">
-                Publication history: <span>{exhibit.publication_history.replace(/<[^>]+>/g, "")}</span>
+                Publication history:{" "}
+                <span>
+                  {exhibit.publication_history.replace(/<[^>]+>/g, "")}
+                </span>
               </p>
             )}
             {exhibit.provenance_text && (
               <p className="object__text">
-                Origin: <span>{exhibit.provenance_text.replace(/<[^>]+>/g, "")}</span>
+                Origin:{" "}
+                <span>{exhibit.provenance_text.replace(/<[^>]+>/g, "")}</span>
               </p>
             )}
           </div>
