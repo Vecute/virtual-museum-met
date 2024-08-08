@@ -19,19 +19,15 @@ interface Artwork {
   date_end: number;
 }
 
-interface DepartmentOption {
-  id: string;
-  title: string;
-}
-
-interface PlaceOfOriginOption {
-  value: string;
-}
-
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // State for search and filter values
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
+  const [departmentFilter, setDepartmentFilter] = useState(
+    searchParams.get("query[term][department_id]") || ""
+  );
   const [placeOfOriginFilter, setPlaceOfOriginFilter] = useState(
     searchParams.get("query[term][place_of_origin.keyword]") || ""
   );
@@ -41,17 +37,16 @@ const SearchPage = () => {
   const [dateEndFilter, setDateEndFilter] = useState(
     searchParams.get("query[range][date_end][lte]") || ""
   );
+
+  // State for results and loading
   const [results, setResults] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get("page") || "1", 10) || 1
   );
   const [totalPages, setTotalPages] = useState(1);
-  const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>(
-    []
-  );
-  const [placeOfOriginOptions, setPlaceOfOriginOptions] =
-    useState<PlaceOfOriginOption[]>([]);
+
+  // Redux
   const dispatch = useAppDispatch();
   const departments = useSelector(
     (state: RootState) => state.departmentsReducer.departments
@@ -60,112 +55,94 @@ const SearchPage = () => {
     (state: RootState) => state.placeOfOriginReducer.placeOfOrigin
   );
 
-  // Устанавливаем initialDepartmentId из URL
-  const initialDepartmentId = searchParams.get("query[term][department_id]");
-
-  // Инициализируем departmentFilter с initialDepartmentId
-  const [departmentFilter, setDepartmentFilter] = useState(
-    initialDepartmentId || ""
-  );
-
+  // Function to update search params and navigate
   const updateSearchParams = (newParams: {
     [key: string]: string | undefined;
   }) => {
     setSearchParams((prevParams) => {
-      // Создаем новый объект URLSearchParams
       const mergedParams = new URLSearchParams(prevParams);
-  
-      // Добавляем или обновляем параметры из newParams
       for (const key in newParams) {
         if (newParams[key] !== undefined) {
           mergedParams.set(key, newParams[key]);
         }
       }
-  
       navigate(`?${mergedParams.toString()}`);
       return mergedParams;
     });
   };
+
+  // Generic function to handle filter changes
+  const handleFilterChange = (
+    newValue: string,
+    paramKey: string,
+    setState: (value: string) => void
+  ) => {
+    setState(newValue);
+    setCurrentPage(1); // Reset to page 1 when filter changes
+    updateSearchParams({ [paramKey]: newValue, page: "1" });
+  };
+
+  // Handlers for individual filter changes
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setCurrentPage(1);
-    updateSearchParams({
-      q: event.target.value,
-      page: "1",
-      "query[term][department_id]": departmentFilter,
-      "query[term][place_of_origin.keyword]": placeOfOriginFilter,
-      "query[range][date_start][gte]": dateStartFilter,
-      "query[range][date_end][lte]": dateEndFilter,
-    });
+    handleFilterChange(event.target.value, "q", setSearchTerm);
   };
 
   const handleDepartmentFilterChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setDepartmentFilter(event.target.value);
-    setCurrentPage(1);
-    updateSearchParams({
-      "query[term][department_id]": event.target.value,
-      page: "1",
-    });
+    handleFilterChange(
+      event.target.value,
+      "query[term][department_id]",
+      setDepartmentFilter
+    );
   };
 
   const handlePlaceOfOriginFilterChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const selectedValue = event.target.value;
-    setPlaceOfOriginFilter(selectedValue);
-    updateSearchParams({
-      "query[term][place_of_origin.keyword]": selectedValue,
-      page: "1",
-    });
+    handleFilterChange(
+      event.target.value,
+      "query[term][place_of_origin.keyword]",
+      setPlaceOfOriginFilter
+    );
   };
 
   const handleDateStartFilterChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setDateStartFilter(event.target.value);
-    setCurrentPage(1);
-    updateSearchParams({
-      "query[range][date_start][gte]": event.target.value,
-      page: "1",
-    });
+    const newStartDate = event.target.value;
+    // Ensure start date is not greater than end date
+    if (
+      dateEndFilter &&
+      parseInt(newStartDate, 10) > parseInt(dateEndFilter, 10)
+    ) {
+      setDateEndFilter(newStartDate);
+    }
+    handleFilterChange(newStartDate, "query[range][date_start][gte]", setDateStartFilter);
   };
 
   const handleDateEndFilterChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setDateEndFilter(event.target.value);
-    setCurrentPage(1);
-    updateSearchParams({
-      "query[range][date_end][lte]": event.target.value,
-      page: "1",
-    });
+    const newEndDate = event.target.value;
+    // Ensure end date is not less than start date
+    if (
+      dateStartFilter &&
+      parseInt(newEndDate, 10) < parseInt(dateStartFilter, 10)
+    ) {
+      setDateStartFilter(newEndDate);
+    }
+    handleFilterChange(newEndDate, "query[range][date_end][lte]", setDateEndFilter);
   };
 
+  // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     updateSearchParams({ page: page.toString() });
   };
 
+  // Fetch data from API
   useEffect(() => {
-    // Устанавливаем initialDepartmentId из URL
-    const initialDepartmentId = searchParams.get("query[term][department_id]");
-
-    // Инициализируем departmentFilter с initialDepartmentId
-    if (initialDepartmentId) {
-      setDepartmentFilter(initialDepartmentId);
-    }
-
-    // Диспатчим fetchDepartments
-    dispatch(fetchDepartments());
-
-    // Диспатчим fetchPlaceOfOrigin
-    dispatch(fetchPlaceOfOrigin());
-  }, [dispatch, searchParams]);
-
-  useEffect(() => {
-    // Выполняем fetchData после загрузки департаментов
     const fetchData = async () => {
       setIsLoading(true);
       const url = new URL(API_BASE_URL);
@@ -186,9 +163,7 @@ const SearchPage = () => {
       }
       if (placeOfOriginFilter) {
         filter.push({
-          term: {
-            "place_of_origin.keyword": placeOfOriginFilter,
-          },
+          term: { "place_of_origin.keyword": placeOfOriginFilter },
         });
       }
       if (dateStartFilter) {
@@ -206,14 +181,11 @@ const SearchPage = () => {
       try {
         const response = await fetch(url.toString(), {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(requestBody),
         });
 
         const data = await response.json();
-
         setResults(data.data);
         setTotalPages(data.pagination.total_pages);
       } catch (error) {
@@ -232,16 +204,19 @@ const SearchPage = () => {
     dateEndFilter,
     currentPage,
     searchParams,
-    departments,
   ]);
 
+  // Fetch departments and places of origin on mount
   useEffect(() => {
-    setDepartmentOptions(departments);
-  }, [departments]);
+    dispatch(fetchDepartments());
+    dispatch(fetchPlaceOfOrigin());
+  }, [dispatch]);
 
-  useEffect(() => {
-    setPlaceOfOriginOptions(placesOfOrigin);
-  }, [placesOfOrigin]);
+  const sortedPlacesOfOrigin = placesOfOrigin.slice().sort((a, b) => {
+    if (a.value < b.value) return -1;
+    if (a.value > b.value) return 1;
+    return 0;
+  });
 
   return (
     <TemplatePage title="Search through the collection">
@@ -257,15 +232,11 @@ const SearchPage = () => {
         {/* Department Filter */}
         <select value={departmentFilter} onChange={handleDepartmentFilterChange}>
           <option value="">All Departments</option>
-          {isLoading ? (
-            <option value="">Загрузка...</option>
-          ) : (
-            departmentOptions.map((department) => (
-              <option key={department.id} value={department.id}>
-                {department.title}
-              </option>
-            ))
-          )}
+          {departments.map((department) => (
+            <option key={department.id} value={department.id}>
+              {department.title}
+            </option>
+          ))}
         </select>
 
         {/* Place of Origin Filter */}
@@ -274,7 +245,7 @@ const SearchPage = () => {
           onChange={handlePlaceOfOriginFilterChange}
         >
           <option value="">All Places of Origin</option>
-          {placeOfOriginOptions.map((place) => (
+          {sortedPlacesOfOrigin.map((place) => (
             <option key={place.value} value={place.value}>
               {place.value}
             </option>
