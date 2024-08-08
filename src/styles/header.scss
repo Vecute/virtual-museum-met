@@ -20,9 +20,8 @@
   }
 
   &__logo {
-    width: 33px;
-    height: 33px;
-    padding: 2px;
+    width: 70px;
+    height: 35px;
     transition: all 0.3s linear;
     & path {
       transition: all 0.3s linear;
@@ -32,7 +31,8 @@
         border-radius: 5px;
     }
     &:hover path {
-        fill: red;
+        fill: transparent;
+        stroke: #ec012a;
     }
   }
 

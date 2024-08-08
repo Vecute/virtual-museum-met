@@ -8,11 +8,11 @@ function AboutPage() {
       <div className="about__container">
         <div className="about__description">
           <h2 className="about__title-main">About the Museum</h2>
-          <p className="about__text">The Metropolitan Museum of Art presents over 5,000 years of art from around the world for everyone to experience and enjoy. The Museum lives in two iconic sites in New York City - The Met Fifth Avenue and The Met Cloisters. Millions of people also take part in The Met experience online. Since its founding in 1870, The Met has always aspired to be more than a treasury of rare and beautiful objects. Every day, art comes alive in the Museum's galleries and through its exhibitions and events, revealing new ideas and unexpected connections across time and across cultures.</p>
+          <p className="about__text">Founded in 1879, the Art Institute of Chicago is one of the world’s major museums, housing an extraordinary collection of objects from across places, cultures, and time. We are also a place of active learning for all—dedicated to investigation, innovation, education, and dialogue—continually aspiring to greater public service and civic engagement.</p>
           <h3 className="about__title-secondary">Mission Statement</h3>
-          <p className="about__text">The Metropolitan Museum of Art collects, studies, conserves, and presents significant works of art across time and cultures in order to connect all people to creativity, knowledge, ideas, and one another.</p>
+          <p className="about__text">The Art Institute of Chicago shares its singular collections with our city and the world. We collect, care for, and interpret works of art across time, cultures, geographies, and identities, centering the vision of artists and makers. We recognize that all art is made in a particular context, demanding continual, dynamic reconsideration in the present. We are a place of gathering; we foster the exchange of ideas and inspire an expansive, inclusive understanding of human creativity. </p>
         </div>
-        <div className="about__image-wrapper"><img className="about__image" src="/images/met-about.jpg" alt="met about" /></div>
+        <div className="about__image-wrapper"><img className="about__image" src="/images/uni-about.jpg" alt="uni about" /></div>
       </div>
     </TemplatePage>
   );

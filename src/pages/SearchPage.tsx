@@ -3,6 +3,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import SearchPagination from "../utilities/SearchPagination";
 import TemplatePage from "./TemplatePage";
 import { fetchDepartments } from "../thunk/fetchDepartments";
+import { fetchPlaceOfOrigin } from "../thunk/fetchPlaceOfOrigin";
 import { RootState, useAppDispatch } from "../redux/store";
 import { useSelector } from "react-redux";
 
@@ -23,13 +24,23 @@ interface DepartmentOption {
   title: string;
 }
 
+interface PlaceOfOriginOption {
+  value: string;
+}
+
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
-  const [placeOfOriginFilter, setPlaceOfOriginFilter] = useState("");
-  const [dateStartFilter, setDateStartFilter] = useState("");
-  const [dateEndFilter, setDateEndFilter] = useState("");
+  const [placeOfOriginFilter, setPlaceOfOriginFilter] = useState(
+    searchParams.get("query[term][place_of_origin.keyword]") || ""
+  );
+  const [dateStartFilter, setDateStartFilter] = useState(
+    searchParams.get("query[range][date_start][gte]") || ""
+  );
+  const [dateEndFilter, setDateEndFilter] = useState(
+    searchParams.get("query[range][date_end][lte]") || ""
+  );
   const [results, setResults] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(
@@ -39,30 +50,53 @@ const SearchPage = () => {
   const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>(
     []
   );
+  const [placeOfOriginOptions, setPlaceOfOriginOptions] =
+    useState<PlaceOfOriginOption[]>([]);
   const dispatch = useAppDispatch();
   const departments = useSelector(
     (state: RootState) => state.departmentsReducer.departments
   );
+  const placesOfOrigin = useSelector(
+    (state: RootState) => state.placeOfOriginReducer.placeOfOrigin
+  );
 
-    // Устанавливаем initialDepartmentId из URL
-    const initialDepartmentId = searchParams.get("query[term][department_id]");
+  // Устанавливаем initialDepartmentId из URL
+  const initialDepartmentId = searchParams.get("query[term][department_id]");
 
-    // Инициализируем departmentFilter с initialDepartmentId
-    const [departmentFilter, setDepartmentFilter] = useState(initialDepartmentId || "");
+  // Инициализируем departmentFilter с initialDepartmentId
+  const [departmentFilter, setDepartmentFilter] = useState(
+    initialDepartmentId || ""
+  );
 
-  const updateSearchParams = (newParams: { [key: string]: string }) => {
+  const updateSearchParams = (newParams: {
+    [key: string]: string | undefined;
+  }) => {
     setSearchParams((prevParams) => {
-      navigate(
-        `?${new URLSearchParams({ ...prevParams, ...newParams }).toString()}`
-      );
-      return { ...prevParams, ...newParams };
+      const mergedParams = { ...prevParams, ...newParams };
+
+      // Remove undefined values to avoid issues with URLSearchParams
+      Object.keys(mergedParams).forEach((key) => {
+        if (mergedParams[key] === undefined) {
+          delete mergedParams[key];
+        }
+      });
+
+      navigate(`?${new URLSearchParams(mergedParams).toString()}`);
+      return mergedParams;
     });
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
     setCurrentPage(1);
-    updateSearchParams({ q: event.target.value, page: "1" });
+    updateSearchParams({
+      q: event.target.value,
+      page: "1",
+      "query[term][department_id]": departmentFilter,
+      "query[term][place_of_origin.keyword]": placeOfOriginFilter,
+      "query[range][date_start][gte]": dateStartFilter,
+      "query[range][date_end][lte]": dateEndFilter,
+    });
   };
 
   const handleDepartmentFilterChange = (
@@ -79,10 +113,10 @@ const SearchPage = () => {
   const handlePlaceOfOriginFilterChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setPlaceOfOriginFilter(event.target.value);
-    setCurrentPage(1);
+    const selectedValue = event.target.value;
+    setPlaceOfOriginFilter(selectedValue);
     updateSearchParams({
-      "query[term][place_of_origin]": event.target.value,
+      "query[term][place_of_origin.keyword]": selectedValue,
       page: "1",
     });
   };
@@ -93,7 +127,7 @@ const SearchPage = () => {
     setDateStartFilter(event.target.value);
     setCurrentPage(1);
     updateSearchParams({
-      "query[range][date_start]": `{ "gte": ${event.target.value} }`,
+      "query[range][date_start][gte]": event.target.value,
       page: "1",
     });
   };
@@ -104,7 +138,7 @@ const SearchPage = () => {
     setDateEndFilter(event.target.value);
     setCurrentPage(1);
     updateSearchParams({
-      "query[range][date_end]": `{ "lte": ${event.target.value} }`,
+      "query[range][date_end][lte]": event.target.value,
       page: "1",
     });
   };
@@ -115,20 +149,24 @@ const SearchPage = () => {
   };
 
   useEffect(() => {
-    // Создаем промис, который будет разрешен после установки departmentFilter
-    const departmentFilterPromise = new Promise<void>((resolve) => {
-      const initialDepartmentId = searchParams.get("query[term][department_id]");
-      if (initialDepartmentId) {
-        setDepartmentFilter(initialDepartmentId);
-      }
-      resolve(); // Разрешаем промис после установки departmentFilter
-    });
+    // Устанавливаем initialDepartmentId из URL
+    const initialDepartmentId = searchParams.get("query[term][department_id]");
 
-    // useEffect для загрузки данных
+    // Инициализируем departmentFilter с initialDepartmentId
+    if (initialDepartmentId) {
+      setDepartmentFilter(initialDepartmentId);
+    }
+
+    // Диспатчим fetchDepartments
+    dispatch(fetchDepartments());
+
+    // Диспатчим fetchPlaceOfOrigin
+    dispatch(fetchPlaceOfOrigin());
+  }, [dispatch, searchParams]);
+
+  useEffect(() => {
+    // Выполняем fetchData после загрузки департаментов
     const fetchData = async () => {
-      // Ждем разрешения промиса, прежде чем продолжить
-      await departmentFilterPromise;
-
       setIsLoading(true);
       const url = new URL(API_BASE_URL);
       url.searchParams.set("limit", "20");
@@ -147,7 +185,11 @@ const SearchPage = () => {
         filter.push({ term: { department_id: departmentFilter } });
       }
       if (placeOfOriginFilter) {
-        filter.push({ term: { place_of_origin: placeOfOriginFilter } });
+        filter.push({
+          term: {
+            "place_of_origin.keyword": placeOfOriginFilter,
+          },
+        });
       }
       if (dateStartFilter) {
         filter.push({ range: { date_start: { gte: dateStartFilter } } });
@@ -190,16 +232,16 @@ const SearchPage = () => {
     dateEndFilter,
     currentPage,
     searchParams,
+    departments,
   ]);
 
   useEffect(() => {
-    dispatch(fetchDepartments());
     setDepartmentOptions(departments);
-  }, [dispatch]);
+  }, [departments]);
 
-  const uniquePlacesOfOrigin = [
-    ...new Set(results.map((result) => result.place_of_origin)),
-  ];
+  useEffect(() => {
+    setPlaceOfOriginOptions(placesOfOrigin);
+  }, [placesOfOrigin]);
 
   return (
     <TemplatePage title="Search through the collection">
@@ -215,11 +257,15 @@ const SearchPage = () => {
         {/* Department Filter */}
         <select value={departmentFilter} onChange={handleDepartmentFilterChange}>
           <option value="">All Departments</option>
-          {departmentOptions.map((department) => (
-            <option key={department.id} value={department.id}>
-              {department.title}
-            </option>
-          ))}
+          {isLoading ? (
+            <option value="">Загрузка...</option>
+          ) : (
+            departmentOptions.map((department) => (
+              <option key={department.id} value={department.id}>
+                {department.title}
+              </option>
+            ))
+          )}
         </select>
 
         {/* Place of Origin Filter */}
@@ -228,9 +274,9 @@ const SearchPage = () => {
           onChange={handlePlaceOfOriginFilterChange}
         >
           <option value="">All Places of Origin</option>
-          {uniquePlacesOfOrigin.map((place) => (
-            <option key={place} value={place}>
-              {place}
+          {placeOfOriginOptions.map((place) => (
+            <option key={place.value} value={place.value}>
+              {place.value}
             </option>
           ))}
         </select>

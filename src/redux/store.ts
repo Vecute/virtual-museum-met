@@ -4,12 +4,14 @@ import { useDispatch } from "react-redux";
 import { thunk } from "redux-thunk";
 import departmentsReducer from "./departmentsReducer";
 import exhibitReducer from "./exhibitReducer";
+import placeOfOriginReducer from "./placeOfOriginReducer";
 
 // Создание главного редюсера путем объединения редюсеров с помощью функции combineReducers
 const combineReducer = combineReducers({
         themeReducer, // Редюсер для темы
         departmentsReducer,
-        exhibitReducer
+        exhibitReducer,
+        placeOfOriginReducer
     }
 )
 
