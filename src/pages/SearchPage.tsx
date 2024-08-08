@@ -72,20 +72,20 @@ const SearchPage = () => {
     [key: string]: string | undefined;
   }) => {
     setSearchParams((prevParams) => {
-      const mergedParams = { ...prevParams, ...newParams };
-
-      // Remove undefined values to avoid issues with URLSearchParams
-      Object.keys(mergedParams).forEach((key) => {
-        if (mergedParams[key] === undefined) {
-          delete mergedParams[key];
+      // Создаем новый объект URLSearchParams
+      const mergedParams = new URLSearchParams(prevParams);
+  
+      // Добавляем или обновляем параметры из newParams
+      for (const key in newParams) {
+        if (newParams[key] !== undefined) {
+          mergedParams.set(key, newParams[key]);
         }
-      });
-
-      navigate(`?${new URLSearchParams(mergedParams).toString()}`);
+      }
+  
+      navigate(`?${mergedParams.toString()}`);
       return mergedParams;
     });
   };
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
     setCurrentPage(1);
