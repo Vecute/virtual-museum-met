@@ -67,6 +67,7 @@ export const fetchPlaceOfOrigin = createAsyncThunk(
 
     // Извлечение данных о местах происхождения
     const placesOfOrigin = data.aggregations.places_of_origin.buckets.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (bucket: any) => ({
         value: bucket.key, // Значение места происхождения
       })

@@ -71,6 +71,11 @@ const SearchPage = () => {
     });
   };
 
+  useEffect(() => {
+    const query = searchParams.get("q") || "";
+    setSearchTerm(query);
+  }, [searchParams]);
+
   // Generic function to handle filter changes
   const handleFilterChange = (
     newValue: string,

@@ -83,6 +83,7 @@ export const fetchDepartments = createAsyncThunk(
 
     // Извлечение данных о departments, используя top_hits для получения department_title
     const departments = data.aggregations.departments.buckets.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (bucket: any) => ({
         // id department
         id: bucket.key,
